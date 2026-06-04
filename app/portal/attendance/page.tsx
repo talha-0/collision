@@ -31,7 +31,17 @@ export default function PortalAttendancePage() {
     }
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/attendance")
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        setRecords(data as Record[]);
+        setCheckedIn((data as Record[]).some((r) => !r.checkOut));
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleAttendance = async () => {
     setLoading(true);

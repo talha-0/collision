@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Sparkles } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
@@ -9,6 +9,23 @@ import { Atom } from "./atoms";
 import { collisionProgress, smoothstep, lerp } from "./progress";
 
 type Quality = "high" | "low";
+
+// Module-level factory: Math.random runs at call time, never during React render.
+function makeBurstGeo(quality: Quality): THREE.BufferGeometry {
+  const count = quality === "high" ? 1400 : 480;
+  const positions = new Float32Array(count * 3);
+  const dir = new THREE.Vector3();
+  for (let i = 0; i < count; i++) {
+    dir.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
+    const r = 0.3 + Math.random() * 0.7;
+    positions[i * 3] = dir.x * r;
+    positions[i * 3 + 1] = dir.y * r;
+    positions[i * 3 + 2] = dir.z * r;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  return g;
+}
 
 const TEAL = new THREE.Color("#2ff0d6");
 const RED = new THREE.Color("#ff3a1d");
@@ -33,22 +50,9 @@ function Scene({ quality, reduced }: { quality: Quality; reduced: boolean }) {
 
   const tmp = useMemo(() => new THREE.Color(), []);
 
-  // Outward burst particle cloud (a sphere of points scaled out at merge).
-  const burstGeo = useMemo(() => {
-    const count = quality === "high" ? 1400 : 480;
-    const positions = new Float32Array(count * 3);
-    const dir = new THREE.Vector3();
-    for (let i = 0; i < count; i++) {
-      dir.set(Math.random() * 2 - 1, Math.random() * 2 - 1, Math.random() * 2 - 1).normalize();
-      const r = 0.3 + Math.random() * 0.7;
-      positions[i * 3] = dir.x * r;
-      positions[i * 3 + 1] = dir.y * r;
-      positions[i * 3 + 2] = dir.z * r;
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return g;
-  }, [quality]);
+  // Outward burst particle cloud — useMemo delegates to a module-level factory
+  // so Math.random() runs outside the render cycle.
+  const burstGeo = useMemo(() => makeBurstGeo(quality), [quality]);
 
   useFrame((state) => {
     const p = collisionProgress.current;

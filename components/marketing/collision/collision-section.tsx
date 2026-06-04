@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { Component, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
@@ -12,15 +12,39 @@ const CollisionCanvas = dynamic(() => import("./collision-canvas"), { ssr: false
 
 type Quality = "high" | "low";
 
-function supportsWebGL() {
-  try {
-    const canvas = document.createElement("canvas");
-    const gl =
-      canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-    return !!gl;
-  } catch {
-    return false;
+let webglCache: boolean | undefined;
+function getWebGLSupport() {
+  if (webglCache === undefined) {
+    try {
+      const canvas = document.createElement("canvas");
+      webglCache = !!(
+        canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl")
+      );
+    } catch {
+      webglCache = false;
+    }
   }
+  return webglCache;
+}
+
+const noopSubscribe = () => () => {};
+
+/** Read a media query reactively, SSR-safe (no setState-in-effect). */
+function useMediaQuery(query: string) {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mql = window.matchMedia(query);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
+
+/** WebGL support is fixed per session; read it via an external store to stay SSR-safe. */
+function useWebGLSupport() {
+  return useSyncExternalStore(noopSubscribe, getWebGLSupport, () => false);
 }
 
 /** If the WebGL scene throws (driver/GPU quirk), fall back to the poster instead of a blank section. */
@@ -44,24 +68,17 @@ export function CollisionSection() {
   const revealRef = useRef<HTMLDivElement>(null);
   const cueRef = useRef<HTMLDivElement>(null);
 
-  // Default to the static (poster) path for SSR + first paint; upgrade after mount.
-  const [interactive, setInteractive] = useState(false);
-  const [reduced, setReduced] = useState(false);
-  const [quality, setQuality] = useState<Quality>("high");
   const [mountCanvas, setMountCanvas] = useState(false);
   const [glFailed, setGlFailed] = useState(false);
 
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const small = window.matchMedia("(max-width: 640px)").matches;
-    setReduced(reduce);
-    setQuality(small ? "low" : "high");
-    // The collision is scroll-driven (user-initiated), so we only require WebGL.
-    // prefers-reduced-motion calms the idle motion rather than removing the scene.
-    setInteractive(supportsWebGL());
-  }, []);
-
-  const showScene = interactive && !glFailed;
+  // Client-only capability detection via external stores: SSR-safe, reactive,
+  // and free of setState-in-effect. The collision is scroll-driven (user-initiated),
+  // so we only require WebGL; prefers-reduced-motion calms the idle motion instead.
+  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const small = useMediaQuery("(max-width: 640px)");
+  const webgl = useWebGLSupport();
+  const quality: Quality = small ? "low" : "high";
+  const showScene = webgl && !glFailed;
 
   // Mount the GL canvas when the section is near the viewport (warm it ~1.5 screens early).
   useEffect(() => {
@@ -182,13 +199,6 @@ export function CollisionSection() {
           >
             <span className="text-xs uppercase tracking-[0.2em]">Scroll</span>
             <ArrowDown className="h-4 w-4 animate-bounce" />
-          </div>
-        )}
-
-        {/* dev-only diagnostic — shows why the scene did / didn't activate */}
-        {process.env.NODE_ENV !== "production" && (
-          <div className="absolute left-3 top-20 z-20 rounded bg-black/70 px-2 py-1 font-mono text-[10px] leading-tight text-teal-200/90 pointer-events-none">
-            scene:{String(showScene)} · webgl:{String(interactive)} · reduced:{String(reduced)} · glFail:{String(glFailed)} · mounted:{String(mountCanvas)}
           </div>
         )}
       </div>

@@ -19,11 +19,6 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
     lenis.on("scroll", ScrollTrigger.update);
 
-    // Dev-only handle for debugging / scroll-position verification.
-    if (process.env.NODE_ENV !== "production") {
-      (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
-    }
-
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
     gsap.ticker.lagSmoothing(0);

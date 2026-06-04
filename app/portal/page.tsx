@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/auth";
-import { FileText, Clock, MapPin, CalendarCheck } from "lucide-react";
+import { FileText, Clock, CalendarCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,8 +28,20 @@ export default function PortalPage() {
   };
 
   useEffect(() => {
-    loadAttendance();
-    fetch("/api/portal/invoices").then((r) => r.json()).then((d) => { if (Array.isArray(d)) setInvoices(d); });
+    let cancelled = false;
+    // Attendance
+    fetch("/api/attendance")
+      .then((r) => r.json())
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        setAttendance(data as AttendanceRecord[]);
+        setCheckedIn((data as AttendanceRecord[]).some((r) => !r.checkOut));
+      });
+    // Invoices
+    fetch("/api/portal/invoices")
+      .then((r) => r.json())
+      .then((d: unknown) => { if (!cancelled && Array.isArray(d)) setInvoices(d as Invoice[]); });
+    return () => { cancelled = true; };
   }, []);
 
   const handleAttendance = async () => {

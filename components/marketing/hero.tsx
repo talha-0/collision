@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowRight, MessageCircle, Star } from "lucide-react";
@@ -23,9 +23,15 @@ const blurSlide = {
   }),
 };
 
+// useSyncExternalStore: SSR returns false (server snapshot), client returns true
+// after hydration — no effect + setState needed, no cascading render.
+const noop = () => () => {};
+function useIsMounted() {
+  return useSyncExternalStore(noop, () => true, () => false);
+}
+
 export function Hero() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useIsMounted();
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-16">
