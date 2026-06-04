@@ -81,7 +81,7 @@ export function Pricing() {
               }}
               className={`relative rounded-2xl p-8 flex flex-col border transition-all duration-300
                 ${plan.highlight
-                  ? "bg-primary text-primary-foreground border-primary shadow-2xl shadow-primary/30 scale-105"
+                  ? "bg-primary text-primary-foreground border-primary shadow-2xl shadow-primary/30 md:-translate-y-3 z-10"
                   : "bg-card hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
                 }`}
             >

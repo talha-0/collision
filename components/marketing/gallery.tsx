@@ -46,18 +46,18 @@ export function Gallery() {
                 duration: 0.7,
                 delay: i * 0.07,
               }}
-              className={`group relative rounded-2xl overflow-hidden border border-border/50
-                bg-muted ${p.span}`}
+              className={`group relative rounded-2xl overflow-hidden border border-border/60
+                bg-muted shadow-sm ring-1 ring-black/5 dark:ring-white/10 ${p.span}`}
             >
               <Image
                 src={p.src}
                 alt={p.alt}
                 fill
                 sizes="(max-width: 640px) 50vw, 25vw"
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                className="object-cover brightness-[1.04] group-hover:scale-105 transition-transform duration-700 ease-out"
               />
-              {/* Subtle base vignette — always on so photo edges read on any bg */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+              {/* Faint base vignette so edges read; most of the photo stays clear */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
               {/* Hover reveal */}
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span

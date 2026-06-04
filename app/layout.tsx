@@ -18,6 +18,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://collision.pk"),
   title: "CO-LLISION — Coworking Space",
   description: "Where ideas, work & opportunities connect. A productive coworking space for freelancers, remote workers, startups, and creators.",
   openGraph: {

@@ -82,10 +82,10 @@ export function Spaces() {
                   alt={space.name}
                   fill
                   sizes="(max-width: 640px) 100vw, 50vw"
-                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  className="object-cover brightness-[1.04] group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                {/* Lighter gradient so photos are clearly visible */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+                {/* Darkness concentrated only at the bottom so the photo stays clear */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
                 <Badge className="absolute top-4 left-4 bg-black/50 text-white backdrop-blur-sm border-0 text-xs">
                   {space.badge}
                 </Badge>

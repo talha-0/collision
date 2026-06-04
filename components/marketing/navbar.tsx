@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { motion, useScroll } from "framer-motion";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { CollisionMark } from "./collision-mark";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -43,10 +44,7 @@ export function Navbar() {
             href="/"
             className="flex items-center gap-2.5 font-heading font-bold text-lg group"
           >
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center
-              shadow-sm shadow-primary/30 group-hover:shadow-primary/50 transition-shadow">
-              <Zap className="w-4 h-4 text-primary-foreground" />
-            </div>
+            <CollisionMark className="w-8 h-8 transition-transform duration-300 group-hover:scale-110" />
             <span>CO&#8209;LLISION</span>
           </Link>
 

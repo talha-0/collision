@@ -71,7 +71,7 @@ export function Hero() {
             >
               Where ideas{" "}
               <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-br from-primary via-cyan-500 to-teal-600 bg-clip-text text-transparent">
+                <span className="relative z-10 text-primary">
                   collide.
                 </span>
                 <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 300 12" fill="none" preserveAspectRatio="none">
@@ -127,7 +127,7 @@ export function Hero() {
             >
               {stats.map((s) => (
                 <div key={s.label} className="text-center lg:text-left">
-                  <div className="font-heading text-3xl font-bold bg-gradient-to-br from-primary to-cyan-500 bg-clip-text text-transparent">
+                  <div className="font-heading text-3xl font-bold text-primary">
                     {s.value}
                   </div>
                   <div className="text-sm text-muted-foreground mt-0.5 font-medium">{s.label}</div>
@@ -152,7 +152,7 @@ export function Hero() {
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
             </div>
 
             {/* Floating review card */}
