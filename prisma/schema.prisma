@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("CLIENT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  client    Client?
+}
+
+model Branch {
+  id        String    @id @default(cuid())
+  name      String
+  address   String
+  city      String
+  phone     String?
+  createdAt DateTime  @default(now())
+  clients   Client[]
+  seats     Seat[]
+  expenses  Expense[]
+}
+
+model Client {
+  id         String       @id @default(cuid())
+  userId     String       @unique
+  user       User         @relation(fields: [userId], references: [id])
+  branchId   String
+  branch     Branch       @relation(fields: [branchId], references: [id])
+  company    String?
+  phone      String?
+  startDate  DateTime     @default(now())
+  status     String       @default("ACTIVE")
+  createdAt  DateTime     @default(now())
+  seats      Seat[]
+  invoices   Invoice[]
+  attendance Attendance[]
+}
+
+model Seat {
+  id            String   @id @default(cuid())
+  label         String
+  branchId      String
+  branch        Branch   @relation(fields: [branchId], references: [id])
+  clientId      String?
+  client        Client?  @relation(fields: [clientId], references: [id])
+  type          String   @default("DEDICATED")
+  status        String   @default("AVAILABLE")
+  pricePerMonth Float    @default(0)
+  createdAt     DateTime @default(now())
+}
+
+model Invoice {
+  id          String    @id @default(cuid())
+  clientId    String
+  client      Client    @relation(fields: [clientId], references: [id])
+  amount      Float
+  dueDate     DateTime
+  status      String    @default("PENDING")
+  description String?
+  createdAt   DateTime  @default(now())
+  payments    Payment[]
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  invoiceId String
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  amount    Float
+  method    String   @default("CASH")
+  paidAt    DateTime @default(now())
+  notes     String?
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  category    String
+  amount      Float
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Attendance {
+  id       String    @id @default(cuid())
+  clientId String
+  client   Client    @relation(fields: [clientId], references: [id])
+  checkIn  DateTime  @default(now())
+  checkOut DateTime?
+  date     DateTime  @default(now())
+}
+
+model ContactInquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  message   String
+  status    String   @default("NEW")
+  createdAt DateTime @default(now())
+}
