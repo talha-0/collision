@@ -112,6 +112,10 @@
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
+  /* Prevent any absolutely-positioned or transformed element from triggering
+     a horizontal scrollbar. clip (unlike hidden) does not create a new scroll
+     container so position:sticky / position:fixed keep working correctly. */
+  overflow-x: clip;
 }
 
 html { scroll-behavior: smooth; }

@@ -31,7 +31,7 @@ const TEAL = new THREE.Color("#2ff0d6");
 const RED = new THREE.Color("#ff3a1d");
 const PURPLE = new THREE.Color("#9d30ff");
 
-function Scene({ quality, reduced }: { quality: Quality; reduced: boolean }) {
+function Scene({ quality, reduced, mobile }: { quality: Quality; reduced: boolean; mobile: boolean }) {
   const atomA = useRef<THREE.Group>(null);
   const atomB = useRef<THREE.Group>(null);
 
@@ -63,10 +63,12 @@ function Scene({ quality, reduced }: { quality: Quality; reduced: boolean }) {
     const merge = smoothstep(0.6, 0.82, p);
     const resolve = smoothstep(0.8, 1.0, p);
 
-    const startX = 5.2;
-    const contactX = 1.02;
-    const atomScale = lerp(0.6, 1.0, approach) * (1 - collide);
-    const bob = reduced ? 0 : 0.12; // idle vertical drift only when motion is allowed
+    // On mobile portrait the horizontal FOV is ~25° vs ~45° on desktop,
+    // so pull the atoms in closer so they enter the frame earlier and fill it.
+    const startX   = mobile ? 2.8 : 5.2;
+    const contactX = mobile ? 0.78 : 1.02;
+    const atomScale = lerp(mobile ? 0.7 : 0.6, 1.0, approach) * (1 - collide);
+    const bob = reduced ? 0 : (mobile ? 0.06 : 0.12); // calmer idle drift on mobile
 
     if (atomA.current) {
       atomA.current.position.set(lerp(-startX, -contactX, approach), Math.sin(t * 0.7) * bob * (1 - collide), 0);
@@ -133,10 +135,11 @@ function Scene({ quality, reduced }: { quality: Quality; reduced: boolean }) {
     }
 
     // Camera dolly + a brief shake at impact (shake suppressed under reduced motion).
+    // Mobile uses a tighter Z range so the burst fills the screen dramatically.
     const cam = state.camera;
-    let z = lerp(7.5, 5.4, approach);
-    z = lerp(z, 4.7, merge);
-    z = lerp(z, 5.8, resolve);
+    let z = lerp(mobile ? 6.0 : 7.5, mobile ? 4.6 : 5.4, approach);
+    z = lerp(z, mobile ? 4.0 : 4.7, merge);
+    z = lerp(z, mobile ? 5.0 : 5.8, resolve);
     const shake = reduced ? 0 : collide * (1 - merge) * 0.05;
     cam.position.set(Math.sin(t * 43) * shake, Math.cos(t * 39) * shake, z);
     cam.lookAt(0, 0, 0);
@@ -211,18 +214,24 @@ function Scene({ quality, reduced }: { quality: Quality; reduced: boolean }) {
 export default function CollisionCanvas({
   quality = "high",
   reduced = false,
+  mobile = false,
 }: {
   quality?: Quality;
   reduced?: boolean;
+  /** On mobile portrait the horizontal FOV is very narrow; this flag widens the
+   *  lens and brings the camera closer so the collision fills the screen. */
+  mobile?: boolean;
 }) {
   return (
     <Canvas
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       dpr={quality === "low" ? [1, 1.25] : [1, 1.8]}
-      camera={{ position: [0, 0, 7.5], fov: 45 }}
+      // Mobile: 52° vFOV + z=6.0 → ~25° hFOV on a 9:19.5 phone, atoms comfortably fill frame.
+      // Desktop: 45° vFOV + z=7.5 → wide cinematic sweep.
+      camera={{ position: [0, 0, mobile ? 6.0 : 7.5], fov: mobile ? 52 : 45 }}
       style={{ position: "absolute", inset: 0 }}
     >
-      <Scene quality={quality} reduced={reduced} />
+      <Scene quality={quality} reduced={reduced} mobile={mobile} />
       <EffectComposer>
         <Bloom
           mipmapBlur

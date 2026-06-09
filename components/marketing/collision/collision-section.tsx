@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { collisionProgress, clamp01 } from "./progress";
 
 const CollisionCanvas = dynamic(() => import("./collision-canvas"), { ssr: false });
@@ -123,7 +123,7 @@ export function CollisionSection() {
     { scope: trackRef, dependencies: [showScene] },
   );
 
-  const trackHeight = showScene ? (quality === "low" ? "260vh" : "320vh") : "100vh";
+  const trackHeight = showScene ? (quality === "low" ? "280vh" : "320vh") : "100vh";
 
   return (
     <section
@@ -147,7 +147,7 @@ export function CollisionSection() {
         {showScene && mountCanvas && (
           <CanvasErrorBoundary onError={() => setGlFailed(true)}>
             <Suspense fallback={null}>
-              <CollisionCanvas quality={quality} reduced={reduced} />
+              <CollisionCanvas quality={quality} reduced={reduced} mobile={small} />
             </Suspense>
           </CanvasErrorBoundary>
         )}
@@ -166,27 +166,30 @@ export function CollisionSection() {
         )}
 
         {/* headline reveal (real, always-present text — never gated on the canvas) */}
-        <div className="absolute inset-0 z-10 flex items-center justify-center px-6 pointer-events-none">
+        <div className="absolute inset-0 z-10 flex items-center justify-center px-5 sm:px-8 pointer-events-none">
           <div
             ref={revealRef}
-            className="max-w-2xl text-center"
+            className="w-full max-w-2xl text-center"
             style={{ opacity: showScene ? 0 : 1, willChange: "opacity, transform" }}
           >
-            <p className="mb-4 text-sm font-semibold uppercase tracking-[0.22em] text-teal-300/90">
+            <p className="mb-3 text-xs sm:text-sm font-semibold uppercase tracking-[0.22em] text-teal-300/90">
               The CO-LLISION effect
             </p>
-            <h2 className="font-heading text-4xl sm:text-6xl font-bold leading-[1.04] text-white text-balance">
+            <h2 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-bold leading-[1.04] text-white text-balance">
               Where ideas collide.
             </h2>
-            <p className="mx-auto mt-5 max-w-md text-base sm:text-lg leading-relaxed text-slate-300/90">
+            <p className="mx-auto mt-4 sm:mt-5 max-w-sm sm:max-w-md text-sm sm:text-lg leading-relaxed text-slate-300/80">
               Two forces meet, and something new takes shape. That is the room we built.
             </p>
             <a
               href="#spaces"
-              className="pointer-events-auto mt-8 inline-flex items-center gap-2 rounded-xl bg-teal-400/95 px-6 h-11
-                text-sm font-semibold text-[#04181a] shadow-lg shadow-teal-500/25 transition-transform hover:-translate-y-0.5"
+              className="pointer-events-auto mt-6 sm:mt-8 inline-flex items-center gap-2 rounded-xl
+                bg-teal-400/95 px-5 sm:px-6 h-10 sm:h-11
+                text-sm font-semibold text-[#04181a] shadow-lg shadow-teal-500/25
+                transition-transform hover:-translate-y-0.5 active:scale-95"
             >
               Explore the space
+              <ArrowRight className="h-4 w-4 shrink-0" />
             </a>
           </div>
         </div>
